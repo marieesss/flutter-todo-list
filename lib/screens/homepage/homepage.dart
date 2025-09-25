@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../components/row/row.dart';
+import '../../components/row/PaddedText.dart';
 import "../todos/todos.dart";
 
 class HomepagePage extends StatefulWidget {

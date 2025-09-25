@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../components/row/row.dart';
+import '../../components/row/PaddedText.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
