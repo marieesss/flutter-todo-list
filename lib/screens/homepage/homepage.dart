@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../components/row/row.dart';
 import "../todos/todos.dart";
+import "../categories/categories_page.dart";
 
 class HomepagePage extends StatefulWidget {
   const HomepagePage({super.key});
@@ -58,6 +59,16 @@ class _HomepagePageState extends State<HomepagePage> {
                 );
               },
               icon: const Icon(Icons.navigate_next),
+            ),
+            IconButton(
+              onPressed: () {
+                Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => const CategoriesPage(),
+                  ),
+                );
+              },
+              icon: const Icon(Icons.category),
             ),
           ],
         ),
