@@ -1,10 +1,10 @@
+// lib/screens/categories/add_edit_category_page.dart
 import 'package:flutter/material.dart';
 import '../../models/category.dart';
 import '../../services/category_service.dart';
 
 class AddEditCategoryPage extends StatefulWidget {
-  final Category? category; // null = ajout, non-null = édition
-
+  final Category? category;
   const AddEditCategoryPage({super.key, this.category});
 
   @override
@@ -12,264 +12,267 @@ class AddEditCategoryPage extends StatefulWidget {
 }
 
 class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
-  final _nameController = TextEditingController();
-  final _descriptionController = TextEditingController();
   final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();
+  final _descCtrl = TextEditingController();
 
-  Color _selectedColor = Colors.blue;
-  IconData _selectedIcon = Icons.category;
+  // Etat local simple pour la couleur & l’icône
+  Color _color = Colors.blue;
+  IconData _icon = Icons.category;
 
-  final List<Color> _availableColors = [
-    Colors.blue,
-    Colors.green,
-    Colors.orange,
-    Colors.purple,
-    Colors.red,
-    Colors.teal,
-    Colors.pink,
-    Colors.indigo,
-    Colors.brown,
-    Colors.grey,
-  ];
-
-  final List<IconData> _availableIcons = [
-    Icons.category,
-    Icons.work,
-    Icons.person,
-    Icons.home,
-    Icons.school,
-    Icons.shopping_cart,
-    Icons.local_hospital,
-    Icons.restaurant,
-    Icons.sports_basketball,
-    Icons.travel_explore,
-    Icons.book,
-    Icons.music_note,
-    Icons.fitness_center,
-    Icons.pets,
-    Icons.car_repair,
-  ];
+  bool _saving = false;
 
   @override
   void initState() {
     super.initState();
     if (widget.category != null) {
-      _nameController.text = widget.category!.name;
-      _descriptionController.text = widget.category!.description;
-      _selectedColor = widget.category!.color;
-      _selectedIcon = widget.category!.icon;
+      _nameCtrl.text = widget.category!.name;
+      _descCtrl.text = widget.category!.description;
+      _color = widget.category!.color;
+      _icon = widget.category!.icon;
     }
   }
 
   @override
   void dispose() {
-    _nameController.dispose();
-    _descriptionController.dispose();
+    _nameCtrl.dispose();
+    _descCtrl.dispose();
     super.dispose();
   }
 
-  void _saveCategory() {
-    if (_formKey.currentState!.validate()) {
-      final now = DateTime.now();
+  Future<void> _save() async {
+    // 1) validations synchrones
+    if (!_formKey.currentState!.validate()) return;
 
-      // Si création : on définit createdAt=now, updatedAt=now
-      // Si édition : on conserve createdAt, on mettra updatedAt=now (le service le force de toute façon)
+    setState(() => _saving = true);
+    try {
+      final name = _nameCtrl.text.trim();
+      final desc = _descCtrl.text.trim();
+
+      // 2) validation asynchrone (unicité du nom) — ICI on peut await
+      final exists = await CategoryService.categoryNameExists(
+        name,
+        excludeId: widget.category?.id,
+      );
+      if (exists) {
+        if (!mounted) return;
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(content: Text('Ce nom de catégorie existe déjà')),
+        );
+        return; // on arrête ici sans planter le validator
+      }
+
+      // 3) construire l’objet Category pour le service
+      final now = DateTime.now();
       final category = Category(
-        id: widget.category?.id ?? CategoryService.generateId(),
-        name: _nameController.text.trim(),
-        description: _descriptionController.text.trim(),
-        color: _selectedColor,
-        icon: _selectedIcon,
+        id:
+            widget.category?.id ??
+            '', // ignoré par addCategory (Firestore génère)
+        name: name,
+        description: desc,
+        color: _color,
+        icon: _icon,
         createdAt: widget.category?.createdAt ?? now,
         updatedAt: now,
       );
 
       if (widget.category == null) {
-        CategoryService.addCategory(category);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Catégorie "${category.name}" ajoutée'),
-            backgroundColor: Colors.green,
-          ),
-        );
+        await CategoryService.addCategory(category);
       } else {
-        CategoryService.updateCategory(widget.category!.id, category);
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Catégorie "${category.name}" modifiée'),
-            backgroundColor: Colors.blue,
-          ),
-        );
+        await CategoryService.updateCategory(widget.category!.id, category);
       }
 
-      Navigator.of(context).pop(true);
+      if (!mounted) return;
+      Navigator.pop(context);
+    } catch (e) {
+      if (!mounted) return;
+      ScaffoldMessenger.of(
+        context,
+      ).showSnackBar(SnackBar(content: Text('Erreur: $e')));
+    } finally {
+      if (mounted) setState(() => _saving = false);
     }
   }
 
   @override
   Widget build(BuildContext context) {
-    final isEditing = widget.category != null;
+    final isEdit = widget.category != null;
 
     return Scaffold(
       appBar: AppBar(
-        title: Text(isEditing ? 'Modifier la catégorie' : 'Nouvelle catégorie'),
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
-        actions: [
-          IconButton(
-            onPressed: _saveCategory,
-            icon: const Icon(Icons.save),
-            tooltip: 'Sauvegarder',
-          ),
-        ],
+        title: Text(isEdit ? 'Modifier une catégorie' : 'Nouvelle catégorie'),
       ),
       body: Form(
         key: _formKey,
-        child: SingleChildScrollView(
+        child: ListView(
           padding: const EdgeInsets.all(16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Center(
-                child: Column(
-                  children: [
-                    CircleAvatar(
-                      radius: 40,
-                      backgroundColor: _selectedColor,
-                      child: Icon(_selectedIcon, size: 32, color: Colors.white),
-                    ),
-                    const SizedBox(height: 8),
-                    Text(
-                      _nameController.text.isEmpty
-                          ? 'Nom de la catégorie'
-                          : _nameController.text,
-                      style: const TextStyle(
-                        fontSize: 18,
-                        fontWeight: FontWeight.bold,
-                      ),
-                    ),
-                  ],
+          children: [
+            TextFormField(
+              controller: _nameCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Nom',
+                hintText: 'Ex: Travail, Personnel…',
+              ),
+              textInputAction: TextInputAction.next,
+              validator: (v) {
+                if (v == null || v.trim().isEmpty) {
+                  return 'Le nom est requis';
+                }
+                if (v.trim().length > 60) {
+                  return 'Nom trop long';
+                }
+                // ⚠️ Surtout pas d’async ici !
+                return null;
+              },
+            ),
+            const SizedBox(height: 12),
+            TextFormField(
+              controller: _descCtrl,
+              decoration: const InputDecoration(
+                labelText: 'Description (optionnelle)',
+              ),
+              maxLines: 2,
+            ),
+            const SizedBox(height: 16),
+
+            // Sélecteur de couleur simple
+            Text('Couleur', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              runSpacing: 8,
+              children: [
+                _ColorDot(
+                  color: Colors.blue,
+                  selected: _color == Colors.blue,
+                  onTap: () => setState(() => _color = Colors.blue),
                 ),
-              ),
-              const SizedBox(height: 32),
-              TextFormField(
-                controller: _nameController,
-                decoration: const InputDecoration(
-                  labelText: 'Nom de la catégorie *',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.label),
+                _ColorDot(
+                  color: Colors.orange,
+                  selected: _color == Colors.orange,
+                  onTap: () => setState(() => _color = Colors.orange),
                 ),
-                validator: (value) {
-                  if (value == null || value.trim().isEmpty) {
-                    return 'Le nom est obligatoire';
-                  }
-                  if (CategoryService.categoryNameExists(
-                    value.trim(),
-                    excludeId: widget.category?.id,
-                  )) {
-                    return 'Ce nom de catégorie existe déjà';
-                  }
-                  return null;
-                },
-                onChanged: (_) => setState(() {}),
-              ),
-              const SizedBox(height: 16),
-              TextFormField(
-                controller: _descriptionController,
-                decoration: const InputDecoration(
-                  labelText: 'Description (optionnelle)',
-                  border: OutlineInputBorder(),
-                  prefixIcon: Icon(Icons.description),
+                _ColorDot(
+                  color: Colors.green,
+                  selected: _color == Colors.green,
+                  onTap: () => setState(() => _color = Colors.green),
                 ),
-                maxLines: 3,
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Couleur',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                children: _availableColors.map((color) {
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedColor = color),
-                    child: Container(
-                      width: 40,
-                      height: 40,
-                      decoration: BoxDecoration(
-                        color: color,
-                        shape: BoxShape.circle,
-                        border: Border.all(
-                          color: _selectedColor == color
-                              ? Colors.black
-                              : Colors.transparent,
-                          width: 2,
-                        ),
-                      ),
-                      child: _selectedColor == color
-                          ? const Icon(Icons.check, color: Colors.white)
-                          : null,
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 24),
-              const Text(
-                'Icône',
-                style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold),
-              ),
-              const SizedBox(height: 8),
-              Wrap(
-                spacing: 8,
-                runSpacing: 8,
-                children: _availableIcons.map((icon) {
-                  return GestureDetector(
-                    onTap: () => setState(() => _selectedIcon = icon),
-                    child: Container(
-                      width: 48,
-                      height: 48,
-                      decoration: BoxDecoration(
-                        color: _selectedIcon == icon
-                            ? _selectedColor
-                            : Colors.grey[200],
-                        borderRadius: BorderRadius.circular(8),
-                        border: Border.all(
-                          color: _selectedIcon == icon
-                              ? _selectedColor
-                              : Colors.grey[300]!,
-                          width: 2,
-                        ),
-                      ),
-                      child: Icon(
-                        icon,
-                        color: _selectedIcon == icon
-                            ? Colors.white
-                            : Colors.grey[600],
-                      ),
-                    ),
-                  );
-                }).toList(),
-              ),
-              const SizedBox(height: 32),
-              SizedBox(
-                width: double.infinity,
-                child: ElevatedButton(
-                  onPressed: _saveCategory,
-                  style: ElevatedButton.styleFrom(
-                    backgroundColor: _selectedColor,
-                    foregroundColor: Colors.white,
-                    padding: const EdgeInsets.symmetric(vertical: 16),
-                  ),
-                  child: Text(
-                    isEditing ? 'Modifier la catégorie' : 'Ajouter la catégorie',
-                    style: const TextStyle(fontSize: 16),
-                  ),
+                _ColorDot(
+                  color: Colors.purple,
+                  selected: _color == Colors.purple,
+                  onTap: () => setState(() => _color = Colors.purple),
                 ),
-              ),
-            ],
+                _ColorDot(
+                  color: Colors.red,
+                  selected: _color == Colors.red,
+                  onTap: () => setState(() => _color = Colors.red),
+                ),
+              ],
+            ),
+            const SizedBox(height: 16),
+
+            // Sélecteur d’icône minimal
+            Text('Icône', style: Theme.of(context).textTheme.titleMedium),
+            const SizedBox(height: 8),
+            Wrap(
+              spacing: 8,
+              children: [
+                _IconChoice(
+                  icon: Icons.category,
+                  selected: _icon == Icons.category,
+                  onTap: () => setState(() => _icon = Icons.category),
+                ),
+                _IconChoice(
+                  icon: Icons.work,
+                  selected: _icon == Icons.work,
+                  onTap: () => setState(() => _icon = Icons.work),
+                ),
+                _IconChoice(
+                  icon: Icons.person,
+                  selected: _icon == Icons.person,
+                  onTap: () => setState(() => _icon = Icons.person),
+                ),
+                _IconChoice(
+                  icon: Icons.shopping_cart,
+                  selected: _icon == Icons.shopping_cart,
+                  onTap: () => setState(() => _icon = Icons.shopping_cart),
+                ),
+                _IconChoice(
+                  icon: Icons.local_hospital,
+                  selected: _icon == Icons.local_hospital,
+                  onTap: () => setState(() => _icon = Icons.local_hospital),
+                ),
+              ],
+            ),
+            const SizedBox(height: 24),
+
+            FilledButton.icon(
+              onPressed: _saving
+                  ? null
+                  : _save, // <- onPressed est async via _save()
+              icon: _saving
+                  ? const SizedBox(
+                      height: 18,
+                      width: 18,
+                      child: CircularProgressIndicator(strokeWidth: 2),
+                    )
+                  : const Icon(Icons.check),
+              label: Text(isEdit ? 'Enregistrer' : 'Créer'),
+            ),
+          ],
+        ),
+      ),
+    );
+  }
+}
+
+class _ColorDot extends StatelessWidget {
+  final Color color;
+  final bool selected;
+  final VoidCallback onTap;
+  const _ColorDot({
+    required this.color,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return InkResponse(
+      onTap: onTap,
+      radius: 24,
+      child: Container(
+        width: 30,
+        height: 30,
+        decoration: BoxDecoration(
+          color: color,
+          shape: BoxShape.circle,
+          border: Border.all(
+            color: selected ? Colors.black : Colors.transparent,
+            width: 2,
           ),
         ),
       ),
+    );
+  }
+}
+
+class _IconChoice extends StatelessWidget {
+  final IconData icon;
+  final bool selected;
+  final VoidCallback onTap;
+  const _IconChoice({
+    required this.icon,
+    required this.selected,
+    required this.onTap,
+  });
+
+  @override
+  Widget build(BuildContext context) {
+    return ChoiceChip(
+      label: Icon(icon),
+      selected: selected,
+      onSelected: (_) => onTap(),
     );
   }
 }

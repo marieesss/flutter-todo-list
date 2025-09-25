@@ -1,7 +1,6 @@
-// lib/src/data/categories_repository.dart
+// lib/data/categories_repository.dart
 import 'package:cloud_firestore/cloud_firestore.dart';
 import '../models/category.dart';
-import 'package:flutter/material.dart' show Icons;
 
 class CategoriesRepository {
   final _db = FirebaseFirestore.instance;
@@ -13,44 +12,24 @@ class CategoriesRepository {
       .orderBy('order')
       .snapshots()
       .map(
-        (s) => s.docs.map((d) {
-          final data = d.data();
-          final map = {
-            'id': d.id,
-            'name': data['name'],
-            'description': data['description'] ?? '',
-            // convertit hex → int pour Color(...)
-            'color': _hexToInt(data['color'] as String?),
-            // si pas stocké, mets un défaut
-            'icon': Icons.category.codePoint,
-            // Timestamp → epoch ms pour ton parser actuel
-            'createdAt':
-                (data['createdAt'] as Timestamp?)?.millisecondsSinceEpoch ??
-                DateTime.now().millisecondsSinceEpoch,
-            'updatedAt':
-                (data['updatedAt'] as Timestamp?)?.millisecondsSinceEpoch ??
-                DateTime.now().millisecondsSinceEpoch,
-          };
-          return Category.fromMap(map);
-        }).toList(),
+        (s) => s.docs
+            .map((d) => Category.fromMap({'id': d.id, ...d.data()}))
+            .toList(),
       );
-
-  int? _hexToInt(String? hex) {
-    if (hex == null) return null;
-    final value = hex.replaceAll('#', '');
-    final argb = (value.length == 6) ? 'FF$value' : value;
-    return int.tryParse(argb, radix: 16);
-  }
 
   Future<String> create(
     String uid, {
     required String name,
-    String? color,
+    String description = '',
+    String? color, // hex string
+    int? icon, // codePoint
     int? order,
   }) async {
     final doc = await _col(uid).add({
       'name': name,
-      'color': color,
+      'description': description,
+      'color': color ?? '#6750A4',
+      'icon': icon ?? 0xe14d, // codePoint par défaut = Icons.category
       'order': order ?? DateTime.now().millisecondsSinceEpoch,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
@@ -62,12 +41,16 @@ class CategoriesRepository {
     String uid,
     String id, {
     String? name,
+    String? description,
     String? color,
+    int? icon,
     int? order,
   }) {
     final patch = <String, dynamic>{};
     if (name != null) patch['name'] = name;
+    if (description != null) patch['description'] = description;
     if (color != null) patch['color'] = color;
+    if (icon != null) patch['icon'] = icon;
     if (order != null) patch['order'] = order;
     patch['updatedAt'] = FieldValue.serverTimestamp();
     return _col(uid).doc(id).update(patch);
