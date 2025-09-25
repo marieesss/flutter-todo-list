@@ -1,0 +1,29 @@
+{
+  "project_info": {
+    "project_number": "297919118149",
+    "project_id": "boris-flutter-todo-2025",
+    "storage_bucket": "boris-flutter-todo-2025.firebasestorage.app"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:297919118149:android:ae45de722354b2b827dc2c",
+        "android_client_info": {
+          "package_name": "com.example.flutter_application_1"
+        }
+      },
+      "oauth_client": [],
+      "api_key": [
+        {
+          "current_key": "AIzaSyBwuSnrGaw7DyEg3xg4HlCkIuN9evJ5wuc"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": []
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}
