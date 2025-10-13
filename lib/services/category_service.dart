@@ -1,120 +1,76 @@
+// lib/services/category_service.dart
 import 'package:flutter/material.dart';
+import 'package:firebase_auth/firebase_auth.dart';
+import '../data/categories_repository.dart';
 import '../models/category.dart';
 
 class CategoryService {
-  // Liste statique (mock DB)
-  static List<Category> _categories = [
-    Category(
-      id: '1',
-      name: 'Personnel',
-      description: 'Tâches personnelles et vie privée',
-      color: Colors.blue,
-      icon: Icons.person,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ),
-    Category(
-      id: '2',
-      name: 'Travail',
-      description: 'Tâches professionnelles',
-      color: Colors.orange,
-      icon: Icons.work,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ),
-    Category(
-      id: '3',
-      name: 'Santé',
-      description: 'Rendez-vous médicaux et bien-être',
-      color: Colors.green,
-      icon: Icons.local_hospital,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ),
-    Category(
-      id: '4',
-      name: 'Shopping',
-      description: 'Achats et courses',
-      color: Colors.purple,
-      icon: Icons.shopping_cart,
-      createdAt: DateTime.now(),
-      updatedAt: DateTime.now(),
-    ),
-  ];
+  static final _repo = CategoriesRepository();
+  static final _auth = FirebaseAuth.instance;
 
-  static List<Category> getAllCategories() {
-    return List.from(_categories);
+  static String get _uid {
+    final user = _auth.currentUser;
+    if (user == null) throw StateError('Aucun utilisateur connecté.');
+    return user.uid;
   }
 
-  static Category? getCategoryById(String id) {
-    try {
-      return _categories.firstWhere((c) => c.id == id);
-    } catch (_) {
-      return null;
-    }
+  // --- Lecture
+
+  static Future<List<Category>> getAllCategories() =>
+      _repo.watchAll(_uid).first;
+
+  static Stream<List<Category>> watchAllCategories() => _repo.watchAll(_uid);
+
+  static Future<Category?> getCategoryById(String id) async {
+    final list = await getAllCategories();
+    return list.firstWhere((c) => c.id == id, orElse: () => null as Category);
   }
 
-  // Ajout : garantit les timestamps
-  static void addCategory(Category category) {
-    final now = DateTime.now();
-    final toInsert = category.copyWith(
-      createdAt: category.createdAt, // si déjà fixé en amont, on respecte
-      updatedAt: category.updatedAt,
-    );
-
-    _categories.add(
-      toInsert.copyWith(
-        createdAt: toInsert.createdAt == toInsert.updatedAt
-            ? now
-            : (toInsert.createdAt),
-        updatedAt: now,
-      ),
+  static Future<bool> categoryNameExists(
+    String name, {
+    String? excludeId,
+  }) async {
+    final lower = name.toLowerCase();
+    final list = await getAllCategories();
+    return list.any(
+      (c) => c.name.toLowerCase() == lower && c.id != (excludeId ?? ''),
     );
   }
 
-  // Mise à jour : conserve createdAt et rafraîchit updatedAt
-  static bool updateCategory(String id, Category updatedCategory) {
-    final index = _categories.indexWhere((c) => c.id == id);
-    if (index == -1) return false;
+  static Future<int> getCategoryCount() async =>
+      (await getAllCategories()).length;
 
-    final existing = _categories[index];
-    _categories[index] = updatedCategory.copyWith(
-      id: existing.id,
-      createdAt: existing.createdAt,
-      updatedAt: DateTime.now(),
+  // --- Écriture
+
+  static Future<String> addCategory(Category category) async {
+    return _repo.create(
+      _uid,
+      name: category.name,
+      description: category.description,
+      color:
+          '#${category.color.value.toRadixString(16).padLeft(8, '0').substring(2)}',
+      icon: category.icon.codePoint,
+      order: category.createdAt.millisecondsSinceEpoch,
     );
-    return true;
   }
 
-  static bool deleteCategory(String id) {
-    final index = _categories.indexWhere((c) => c.id == id);
-    if (index != -1) {
-      _categories.removeAt(index);
-      return true;
-    }
-    return false;
+  static Future<void> updateCategory(String id, Category category) {
+    return _repo.update(
+      _uid,
+      id,
+      name: category.name,
+      description: category.description,
+      color:
+          '#${category.color.value.toRadixString(16).padLeft(8, '0').substring(2)}',
+      icon: category.icon.codePoint,
+      order: category.updatedAt.millisecondsSinceEpoch,
+    );
   }
 
-  static String generateId() {
-    return DateTime.now().millisecondsSinceEpoch.toString();
-  }
+  static Future<void> deleteCategory(String id) => _repo.delete(_uid, id);
 
-  static bool categoryNameExists(String name, {String? excludeId}) {
-    return _categories.any((c) =>
-    c.name.toLowerCase() == name.toLowerCase() && c.id != excludeId);
-  }
+  // --- Utils
 
-  static int getCategoryCount() {
-    return _categories.length;
-  }
-
-  static List<Category> searchCategories(String query) {
-    if (query.isEmpty) return getAllCategories();
-    final q = query.toLowerCase();
-    return _categories
-        .where((c) =>
-    c.name.toLowerCase().contains(q) ||
-        c.description.toLowerCase().contains(q))
-        .toList();
-  }
+  static String generateId() =>
+      DateTime.now().millisecondsSinceEpoch.toString();
 }
