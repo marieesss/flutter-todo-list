@@ -1,10 +1,10 @@
+// lib/screens/auth/LoginRegister.dart
 import 'package:flutter/material.dart';
 import '../../services/auth_service.dart';
 import '../homepage/homepage.dart';
 
 class LoginPage extends StatefulWidget {
   const LoginPage({super.key});
-
   @override
   State<LoginPage> createState() => _LoginPageState();
 }
@@ -43,26 +43,24 @@ class _LoginPageState extends State<LoginPage> {
     if (!_formKey.currentState!.validate()) return;
     setState(() => _isLoading = true);
     try {
-      await _auth.signIn(email: _emailCtrl.text.trim(), password: _pwdCtrl.text);
+      await _auth.signIn(
+        email: _emailCtrl.text.trim(),
+        password: _pwdCtrl.text,
+      );
       if (!mounted) return;
-      // TODO: gérer _rememberMe (local storage / secure storage)
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomepagePage()),
         (_) => false,
       );
     } on AuthException catch (e) {
       _showError(e.message);
-    } catch (_) {
-      _showError("Une erreur est survenue. Réessaie.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
   }
 
   void _showError(String msg) {
-    ScaffoldMessenger.of(context).showSnackBar(
-      SnackBar(content: Text(msg)),
-    );
+    ScaffoldMessenger.of(context).showSnackBar(SnackBar(content: Text(msg)));
   }
 
   @override
@@ -89,7 +87,6 @@ class _LoginPageState extends State<LoginPage> {
                       style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),
-
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
@@ -129,8 +126,8 @@ class _LoginPageState extends State<LoginPage> {
                         const Spacer(),
                         TextButton(
                           onPressed: () {
-                            // TODO: mot de passe oublié
-                            _showError("Fonction à implémenter 😉");
+                            // TODO (plus tard) : reset password Firebase
+                            _showError("Mot de passe oublié — à brancher.");
                           },
                           child: const Text("Mot de passe oublié ?"),
                         ),
@@ -146,15 +143,6 @@ class _LoginPageState extends State<LoginPage> {
                             )
                           : const Text("Se connecter"),
                     ),
-                    // const SizedBox(height: 12),
-                    // OutlinedButton.icon(
-                    //   onPressed: () {
-                    //     // TODO: connexion Google/Apple
-                    //     _showError("Connexion sociale à brancher.");
-                    //   },
-                    //   icon: const Icon(Icons.account_circle_outlined),
-                    //   label: const Text("Continuer avec Google"),
-                    // ),
                     const SizedBox(height: 16),
                     Row(
                       mainAxisAlignment: MainAxisAlignment.center,
@@ -181,7 +169,8 @@ class _LoginPageState extends State<LoginPage> {
   }
 }
 
-// --- Page d'inscription (dans le même fichier si tu veux, mais idéalement séparé)
+// -------- Register --------
+
 class RegisterPage extends StatefulWidget {
   const RegisterPage({super.key});
   @override
@@ -195,6 +184,7 @@ class _RegisterPageState extends State<RegisterPage> {
   final _pwd2Ctrl = TextEditingController();
   bool _obscure = true;
   bool _isLoading = false;
+
   final _auth = AuthService();
 
   @override
@@ -232,17 +222,17 @@ class _RegisterPageState extends State<RegisterPage> {
     }
     setState(() => _isLoading = true);
     try {
-      await _auth.signUp(email: _emailCtrl.text.trim(), password: _pwdCtrl.text);
+      await _auth.signUp(
+        email: _emailCtrl.text.trim(),
+        password: _pwdCtrl.text,
+      );
       if (!mounted) return;
-      // Après inscription, on connecte l'utilisateur directement vers l'accueil
       Navigator.of(context).pushAndRemoveUntil(
         MaterialPageRoute(builder: (_) => const HomepagePage()),
         (_) => false,
       );
     } on AuthException catch (e) {
       _showError(e.message);
-    } catch (_) {
-      _showError("Une erreur est survenue. Réessaie.");
     } finally {
       if (mounted) setState(() => _isLoading = false);
     }
@@ -276,7 +266,6 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),
-
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
