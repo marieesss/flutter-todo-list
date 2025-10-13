@@ -25,7 +25,7 @@ class Category {
       'id': id,
       'name': name,
       'description': description,
-      'color': color.value,
+      'color': '#${color.value.toRadixString(16).padLeft(8, '0').substring(2)}',
       'icon': icon.codePoint,
       'createdAt': createdAt.millisecondsSinceEpoch,
       'updatedAt': updatedAt.millisecondsSinceEpoch,
@@ -38,7 +38,7 @@ class Category {
       id: map['id'] ?? '',
       name: map['name'] ?? '',
       description: map['description'] ?? '',
-      color: Color(map['color'] ?? Colors.blue.value),
+      color: _parseColor(map['color']),
       icon: IconData(
         map['icon'] ?? Icons.category.codePoint,
         fontFamily: 'MaterialIcons',
@@ -46,6 +46,24 @@ class Category {
       createdAt: _parseDate(map['createdAt']),
       updatedAt: _parseDate(map['updatedAt']),
     );
+  }
+
+  static Color _parseColor(dynamic v) {
+    if (v is String) {
+      // Format "#9c27b0" ou "9c27b0"
+      String hex = v.replaceAll('#', '');
+      // Ajouter FF pour l'opacité si nécessaire (6 caractères → 8)
+      if (hex.length == 6) {
+        hex = 'FF$hex';
+      }
+      return Color(int.parse(hex, radix: 16));
+    }
+    if (v is int) {
+      // Fallback si jamais on reçoit un int
+      return Color(v);
+    }
+    // Fallback par défaut
+    return Colors.blue;
   }
 
   static DateTime _parseDate(dynamic v) {
