@@ -1,5 +1,5 @@
 import 'package:flutter/material.dart';
-import '../../components/row/row.dart';
+import '../../components/row/PaddedText.dart';
 import "../todos/todos.dart";
 import "../categories/categories_page.dart";
 
@@ -50,16 +50,6 @@ class _HomepagePageState extends State<HomepagePage> {
           children: <Widget>[
             const Text('Hello Homepage:'),
             Expanded(child: const PaddedText()),
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
-                    builder: (context) => const TodosPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.navigate_next),
-            ),
             IconButton(
               onPressed: () {
                 Navigator.of(context).push(

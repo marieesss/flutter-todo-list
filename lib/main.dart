@@ -8,9 +8,7 @@ import 'screens/homepage/homepage.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  await Firebase.initializeApp(
-    options: DefaultFirebaseOptions.currentPlatform,
-  );
+  await Firebase.initializeApp(options: DefaultFirebaseOptions.currentPlatform);
 
   runApp(const MyApp());
 }
@@ -32,9 +30,7 @@ class MyApp extends StatelessWidget {
       ),
       // Démarre sur la page de connexion
       home: const LoginPage(),
-      routes: {
-        '/home': (_) => const HomepagePage(),
-      },
+      routes: {'/home': (_) => const HomepagePage()},
     );
   }
 }

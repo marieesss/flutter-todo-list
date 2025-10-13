@@ -1,6 +1,7 @@
 // lib/screens/categories/categories_page.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_auth/firebase_auth.dart';
+import 'package:flutter_application_1/screens/todos/todos.dart';
 
 import '../../models/category.dart';
 import '../../services/category_service.dart';
@@ -45,6 +46,11 @@ class CategoriesPage extends StatelessWidget {
                 leading: Icon(category.icon, color: category.color),
                 title: Text(category.name),
                 subtitle: Text(category.description),
+                onLongPress: () => Navigator.of(context).push(
+                  MaterialPageRoute<void>(
+                    builder: (context) => TodosPage(categoryId: category.id),
+                  ),
+                ),
                 trailing: PopupMenuButton<String>(
                   onSelected: (value) async {
                     if (value == 'edit') {
