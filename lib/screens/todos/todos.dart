@@ -6,7 +6,9 @@ import 'package:flutter_application_1/models/todo.dart';
 import 'package:flutter_application_1/services/todo_service.dart';
 
 class TodosPage extends StatefulWidget {
-  const TodosPage({super.key});
+  const TodosPage({super.key, required this.categoryId});
+
+  final String categoryId;
 
   @override
   State<TodosPage> createState() => _TodosPageState();
@@ -22,8 +24,14 @@ class _TodosPageState extends State<TodosPage> {
     _loadTodos();
   }
 
+  @override
+  void dispose() {
+    items = [];
+    super.dispose();
+  }
+
   Future<void> _loadTodos() async {
-    final todos = await TodoService.getAllTodos();
+    final todos = await TodoService.getAllTodos(widget.categoryId);
 
     setState(() {
       items = todos
@@ -62,7 +70,7 @@ class _TodosPageState extends State<TodosPage> {
       Todo(
         title: title,
         dueAt: DateTime.now(),
-        categoryId: 'RtZ7eOyZotJe5m28I4jk',
+        categoryId: widget.categoryId,
         isDone: false,
         createdAt: DateTime.now(),
       ),

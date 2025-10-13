@@ -54,16 +54,6 @@ class _HomepagePageState extends State<HomepagePage> {
               onPressed: () {
                 Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (context) => const TodosPage(),
-                  ),
-                );
-              },
-              icon: const Icon(Icons.navigate_next),
-            ),
-            IconButton(
-              onPressed: () {
-                Navigator.of(context).push(
-                  MaterialPageRoute<void>(
                     builder: (context) => const CategoriesPage(),
                   ),
                 );

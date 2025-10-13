@@ -14,9 +14,9 @@ class TodoService {
 
   // --- Lecture
 
-  static Future<List<Todo>> getAllTodos() async {
+  static Future<List<Todo>> getAllTodos(String categoryId) async {
     try {
-      final stream = _repo.watchByCategory(_uid, "RtZ7eOyZotJe5m28I4jk");
+      final stream = _repo.watchByCategory(_uid, categoryId);
       final list = await stream.first;
 
       return list;
@@ -25,8 +25,8 @@ class TodoService {
     }
   }
 
-  static Future<Todo?> getTodoById(String id) async {
-    final list = await getAllTodos();
+  static Future<Todo?> getTodoById(String id, String categoryId) async {
+    final list = await getAllTodos(categoryId);
     try {
       return list.firstWhere((t) => t.id == id);
     } catch (_) {
@@ -42,7 +42,7 @@ class TodoService {
       _uid,
       title: todo.title,
       dueAt: todo.dueAt,
-      categoryId: "RtZ7eOyZotJe5m28I4jk",
+      categoryId: todo.categoryId,
     );
   }
 
@@ -54,7 +54,7 @@ class TodoService {
     return _repo.toggle(_uid, categoryId, id, isDone);
   }
 
-  static Future<void> deleteTodo(String id) {
-    return _repo.delete(_uid, id, "RtZ7eOyZotJe5m28I4jk");
+  static Future<void> deleteTodo(String id, String categoryId) {
+    return _repo.delete(_uid, id, categoryId);
   }
 }
