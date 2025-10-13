@@ -126,7 +126,6 @@ class _LoginPageState extends State<LoginPage> {
                         const Spacer(),
                         TextButton(
                           onPressed: () {
-                            // TODO (plus tard) : reset password Firebase
                             _showError("Mot de passe oublié — à brancher.");
                           },
                           child: const Text("Mot de passe oublié ?"),
@@ -179,6 +178,7 @@ class RegisterPage extends StatefulWidget {
 
 class _RegisterPageState extends State<RegisterPage> {
   final _formKey = GlobalKey<FormState>();
+  final _nameCtrl = TextEditingController();   // 👈 NEW
   final _emailCtrl = TextEditingController();
   final _pwdCtrl = TextEditingController();
   final _pwd2Ctrl = TextEditingController();
@@ -189,10 +189,17 @@ class _RegisterPageState extends State<RegisterPage> {
 
   @override
   void dispose() {
+    _nameCtrl.dispose();   // 👈 NEW
     _emailCtrl.dispose();
     _pwdCtrl.dispose();
     _pwd2Ctrl.dispose();
     super.dispose();
+  }
+
+  String? _nameValidator(String? v) {        // 👈 NEW
+    if (v == null || v.trim().isEmpty) return "Prenom requis";
+    if (v.trim().length < 2) return "Prénom trop court";
+    return null;
   }
 
   String? _emailValidator(String? v) {
@@ -225,6 +232,7 @@ class _RegisterPageState extends State<RegisterPage> {
       await _auth.signUp(
         email: _emailCtrl.text.trim(),
         password: _pwdCtrl.text,
+        name: _nameCtrl.text.trim(),     // 👈 NEW (passage du nom au service)
       );
       if (!mounted) return;
       Navigator.of(context).pushAndRemoveUntil(
@@ -266,6 +274,20 @@ class _RegisterPageState extends State<RegisterPage> {
                       style: theme.textTheme.headlineMedium?.copyWith(fontWeight: FontWeight.w600),
                     ),
                     const SizedBox(height: 24),
+
+                    // -------- Champ Nom (NEW) --------
+                    TextFormField(
+                      controller: _nameCtrl,
+                      textCapitalization: TextCapitalization.words,
+                      decoration: const InputDecoration(
+                        labelText: "Prénom",
+                        prefixIcon: Icon(Icons.person_outline),
+                        border: OutlineInputBorder(),
+                      ),
+                      validator: _nameValidator,
+                    ),
+                    const SizedBox(height: 12),
+
                     TextFormField(
                       controller: _emailCtrl,
                       keyboardType: TextInputType.emailAddress,
@@ -280,15 +302,11 @@ class _RegisterPageState extends State<RegisterPage> {
                     TextFormField(
                       controller: _pwdCtrl,
                       obscureText: _obscure,
-                      decoration: InputDecoration(
+                      decoration: const InputDecoration(
                         labelText: "Mot de passe",
-                        prefixIcon: const Icon(Icons.lock_outline),
-                        border: const OutlineInputBorder(),
+                        prefixIcon: Icon(Icons.lock_outline),
+                        border: OutlineInputBorder(),
                         helperText: "Au moins 8 caractères, 1 maj, 1 min, 1 chiffre",
-                        suffixIcon: IconButton(
-                          onPressed: () => setState(() => _obscure = !_obscure),
-                          icon: Icon(_obscure ? Icons.visibility : Icons.visibility_off),
-                        ),
                       ),
                       validator: _pwdValidator,
                     ),
