@@ -27,14 +27,18 @@ class AuthService {
     final cats = _db.collection('users').doc(uid).collection('categories');
     await cats.add({
       'name': 'Travail',
+      'description': '',
       'color': '#6750A4',
+      'icon': 0xe491,
       'order': 1,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
     });
     await cats.add({
       'name': 'Perso',
+      'description': '',
       'color': '#386A20',
+      'icon': 0xe491,
       'order': 2,
       'createdAt': FieldValue.serverTimestamp(),
       'updatedAt': FieldValue.serverTimestamp(),
