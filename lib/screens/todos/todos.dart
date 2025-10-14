@@ -64,6 +64,12 @@ class _TodosPageState extends State<TodosPage> {
     _loadTodos();
   }
 
+  void _deleteItem(int index) {
+    TodoService.deleteTodo(items[index].id ?? '', widget.categoryId);
+
+    _loadTodos();
+  }
+
   void _addItem(String title) {
     if (title.trim().isEmpty) return;
 
@@ -147,6 +153,9 @@ class _TodosPageState extends State<TodosPage> {
                         isDone: items[index].isDone,
                         onChanged: (value) {
                           _setAsDone(index, value);
+                        },
+                        onDelete: () {
+                          _deleteItem(index);
                         },
                         checkColor: widget.color,
                       );

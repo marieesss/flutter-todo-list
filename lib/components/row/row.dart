@@ -5,6 +5,7 @@ class RowClass extends StatelessWidget {
     required this.title,
     required this.isDone,
     required this.onChanged,
+    required this.onDelete,
     required this.checkColor,
     super.key,
   });
@@ -13,6 +14,7 @@ class RowClass extends StatelessWidget {
   final bool isDone;
   final Color checkColor;
   final ValueChanged<bool?> onChanged;
+  final VoidCallback onDelete;
 
   @override
   Widget build(BuildContext context) {
@@ -23,6 +25,13 @@ class RowClass extends StatelessWidget {
         value: isDone,
         onChanged: onChanged,
         activeColor: checkColor,
+      ),
+
+      trailing: IconButton(
+        icon: Icon(Icons.delete, color: checkColor),
+        onPressed: () {
+          onDelete();
+        },
       ),
     );
   }
