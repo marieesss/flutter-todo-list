@@ -24,6 +24,7 @@ class TodosPage extends StatefulWidget {
 class _TodosPageState extends State<TodosPage> {
   List<Todo> items = [];
   bool isLoading = true;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -92,6 +93,7 @@ class _TodosPageState extends State<TodosPage> {
       ),
     );
 
+    _controller.clear();
     _loadTodos();
   }
 
@@ -114,6 +116,7 @@ class _TodosPageState extends State<TodosPage> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _controller,
                           cursorColor: widget.color,
                           decoration: InputDecoration(
                             labelText: 'Enter your todo',
