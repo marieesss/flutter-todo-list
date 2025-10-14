@@ -6,10 +6,16 @@ import 'package:flutter_application_1/models/todo.dart';
 import 'package:flutter_application_1/services/todo_service.dart';
 
 class TodosPage extends StatefulWidget {
-  const TodosPage({super.key, required this.categoryId, required this.color});
+  const TodosPage({
+    super.key,
+    required this.categoryId,
+    required this.color,
+    required this.title,
+  });
 
   final String categoryId;
   final Color color;
+  final String title;
 
   @override
   State<TodosPage> createState() => _TodosPageState();
@@ -94,7 +100,7 @@ class _TodosPageState extends State<TodosPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: widget.color,
-        title: const Text('Todos'),
+        title: Text(widget.title),
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
       ),
