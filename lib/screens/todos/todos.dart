@@ -6,9 +6,10 @@ import 'package:flutter_application_1/models/todo.dart';
 import 'package:flutter_application_1/services/todo_service.dart';
 
 class TodosPage extends StatefulWidget {
-  const TodosPage({super.key, required this.categoryId});
+  const TodosPage({super.key, required this.categoryId, required this.color});
 
   final String categoryId;
+  final Color color;
 
   @override
   State<TodosPage> createState() => _TodosPageState();
@@ -83,8 +84,10 @@ class _TodosPageState extends State<TodosPage> {
   Widget build(BuildContext context) {
     return Scaffold(
       appBar: AppBar(
-        backgroundColor: Theme.of(context).colorScheme.inversePrimary,
+        backgroundColor: widget.color,
         title: const Text('Todos'),
+        iconTheme: IconThemeData(color: Colors.white),
+        titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
       ),
       body: isLoading
           ? const Center(child: CircularProgressIndicator())
@@ -96,9 +99,22 @@ class _TodosPageState extends State<TodosPage> {
                     children: [
                       Expanded(
                         child: TextField(
-                          decoration: const InputDecoration(
-                            border: OutlineInputBorder(),
+                          cursorColor: widget.color,
+                          decoration: InputDecoration(
                             labelText: 'Enter your todo',
+                            labelStyle: TextStyle(color: widget.color),
+                            focusedBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: widget.color,
+                                width: 2,
+                              ),
+                            ),
+                            enabledBorder: OutlineInputBorder(
+                              borderSide: BorderSide(
+                                color: widget.color.withOpacity(0.5),
+                                width: 1,
+                              ),
+                            ),
                           ),
                           onChanged: (text) {
                             setState(() {
@@ -112,7 +128,11 @@ class _TodosPageState extends State<TodosPage> {
                         onPressed: () {
                           _addItem(_newItemTitle);
                         },
-                        child: const Text("Add"),
+
+                        child: Text(
+                          "Add",
+                          style: TextStyle(color: widget.color),
+                        ),
                       ),
                     ],
                   ),
@@ -128,6 +148,7 @@ class _TodosPageState extends State<TodosPage> {
                         onChanged: (value) {
                           _setAsDone(index, value);
                         },
+                        checkColor: widget.color,
                       );
                     },
                   ),

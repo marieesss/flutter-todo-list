@@ -48,7 +48,10 @@ class CategoriesPage extends StatelessWidget {
                 subtitle: Text(category.description),
                 onLongPress: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
-                    builder: (context) => TodosPage(categoryId: category.id),
+                    builder: (context) => TodosPage(
+                      categoryId: category.id,
+                      color: category.color,
+                    ),
                   ),
                 ),
                 trailing: PopupMenuButton<String>(

@@ -5,11 +5,13 @@ class RowClass extends StatelessWidget {
     required this.title,
     required this.isDone,
     required this.onChanged,
+    required this.checkColor,
     super.key,
   });
 
   final String title;
   final bool isDone;
+  final Color checkColor;
   final ValueChanged<bool?> onChanged;
 
   @override
@@ -17,7 +19,11 @@ class RowClass extends StatelessWidget {
     return ListTile(
       title: Text(title),
       contentPadding: const EdgeInsets.all(8.0),
-      leading: Checkbox(value: isDone, onChanged: onChanged),
+      leading: Checkbox(
+        value: isDone,
+        onChanged: onChanged,
+        activeColor: checkColor,
+      ),
     );
   }
 }
