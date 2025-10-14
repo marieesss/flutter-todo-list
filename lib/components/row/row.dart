@@ -27,6 +27,7 @@ class RowClass extends StatelessWidget {
         value: isDone,
         onChanged: onChanged,
         activeColor: checkColor,
+        side: const BorderSide(color: Colors.white),
       ),
       subtitle: Text(
         dueAt != null

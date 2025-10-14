@@ -1,11 +1,12 @@
 // lib/main.dart
 import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
+import 'package:flutter_application_1/theme/app_theme.dart';
 import 'firebase_options.dart';
 
 // écrans
 import 'screens/auth/LoginRegister.dart';
-import 'screens/categories/categories_page.dart'; // 👈 au lieu de homepage.dart
+import 'screens/categories/categories_page.dart';
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -21,18 +22,10 @@ class MyApp extends StatelessWidget {
   Widget build(BuildContext context) {
     return MaterialApp(
       title: 'Flutter Auth Demo',
-      theme: ThemeData(
-        useMaterial3: true,
-        colorScheme: ColorScheme.fromSeed(seedColor: Colors.deepPurple),
-        inputDecorationTheme: const InputDecorationTheme(
-          filled: true,
-          isDense: true,
-        ),
-      ),
+      darkTheme: AppTheme.darkBW(context),
+      themeMode: ThemeMode.dark,
       home: const LoginPage(),
-      routes: {
-        '/categories': (_) => const CategoriesPage(), // 👈 nouvelle route par défaut
-      },
+      routes: {'/categories': (_) => const CategoriesPage()},
     );
   }
 }

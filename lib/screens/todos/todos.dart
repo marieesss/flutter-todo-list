@@ -93,6 +93,10 @@ class _TodosPageState extends State<TodosPage> {
       ),
     );
 
+    setState(() {
+      _newItemTitle = '';
+      _newItemDueDate = null;
+    });
     _controller.clear();
     _loadTodos();
   }
@@ -153,6 +157,7 @@ class _TodosPageState extends State<TodosPage> {
                             initialDate: DateTime.now(),
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
+
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
@@ -160,6 +165,12 @@ class _TodosPageState extends State<TodosPage> {
                                     primary: widget.color,
                                     onPrimary: Colors.white,
                                     onSurface: widget.color,
+                                    surface: Colors.white,
+                                  ),
+                                  textButtonTheme: TextButtonThemeData(
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: widget.color,
+                                    ),
                                   ),
                                 ),
                                 child: child!,
