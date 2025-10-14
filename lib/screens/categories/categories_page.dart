@@ -51,6 +51,7 @@ class CategoriesPage extends StatelessWidget {
                     builder: (context) => TodosPage(
                       categoryId: category.id,
                       color: category.color,
+                      title: category.name,
                     ),
                   ),
                 ),
