@@ -41,7 +41,9 @@ class _TodosPageState extends State<TodosPage> {
               id: todo.id,
               title: todo.title,
               isDone: todo.isDone,
-              dueAt: todo.dueAt,
+              dueAt: (todo.dueAt is Timestamp)
+                  ? (todo.dueAt as Timestamp).toDate()
+                  : todo.dueAt,
               categoryId: todo.categoryId,
               createdAt: todo.createdAt,
               updatedAt: todo.updatedAt,
@@ -53,6 +55,7 @@ class _TodosPageState extends State<TodosPage> {
   }
 
   String _newItemTitle = '';
+  DateTime? _newItemDueDate;
 
   void _setAsDone(int index, bool? value) {
     TodoService.updateTodo(
@@ -76,7 +79,7 @@ class _TodosPageState extends State<TodosPage> {
     TodoService.addTodo(
       Todo(
         title: title,
-        dueAt: DateTime.now(),
+        dueAt: _newItemDueDate,
         categoryId: widget.categoryId,
         isDone: false,
         createdAt: DateTime.now(),
@@ -129,16 +132,49 @@ class _TodosPageState extends State<TodosPage> {
                           },
                         ),
                       ),
+                      IconButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: widget.color,
+                        ),
+                        onPressed: () async {
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: ColorScheme.light(
+                                    primary: widget.color,
+                                    onPrimary: Colors.white,
+                                    onSurface: widget.color,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+
+                          if (pickedDate != null) {
+                            setState(() {
+                              _newItemTitle = _newItemTitle;
+                              _newItemDueDate = pickedDate;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.calendar_month,
+                          color: Colors.white,
+                        ),
+                      ),
                       const SizedBox(width: 8),
                       ElevatedButton(
                         onPressed: () {
                           _addItem(_newItemTitle);
                         },
 
-                        child: Text(
-                          "Add",
-                          style: TextStyle(color: widget.color),
-                        ),
+                        child: Text("+", style: TextStyle(color: widget.color)),
                       ),
                     ],
                   ),
@@ -150,6 +186,7 @@ class _TodosPageState extends State<TodosPage> {
                     itemBuilder: (BuildContext context, int index) {
                       return RowClass(
                         title: items[index].title,
+                        dueAt: items[index].dueAt,
                         isDone: items[index].isDone,
                         onChanged: (value) {
                           _setAsDone(index, value);
