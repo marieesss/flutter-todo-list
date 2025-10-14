@@ -6,10 +6,16 @@ import 'package:flutter_application_1/models/todo.dart';
 import 'package:flutter_application_1/services/todo_service.dart';
 
 class TodosPage extends StatefulWidget {
-  const TodosPage({super.key, required this.categoryId, required this.color});
+  const TodosPage({
+    super.key,
+    required this.categoryId,
+    required this.color,
+    required this.title,
+  });
 
   final String categoryId;
   final Color color;
+  final String title;
 
   @override
   State<TodosPage> createState() => _TodosPageState();
@@ -41,7 +47,9 @@ class _TodosPageState extends State<TodosPage> {
               id: todo.id,
               title: todo.title,
               isDone: todo.isDone,
-              dueAt: todo.dueAt,
+              dueAt: (todo.dueAt is Timestamp)
+                  ? (todo.dueAt as Timestamp).toDate()
+                  : todo.dueAt,
               categoryId: todo.categoryId,
               createdAt: todo.createdAt,
               updatedAt: todo.updatedAt,
@@ -53,6 +61,7 @@ class _TodosPageState extends State<TodosPage> {
   }
 
   String _newItemTitle = '';
+  DateTime? _newItemDueDate;
 
   void _setAsDone(int index, bool? value) {
     TodoService.updateTodo(
@@ -64,13 +73,19 @@ class _TodosPageState extends State<TodosPage> {
     _loadTodos();
   }
 
+  void _deleteItem(int index) {
+    TodoService.deleteTodo(items[index].id ?? '', widget.categoryId);
+
+    _loadTodos();
+  }
+
   void _addItem(String title) {
     if (title.trim().isEmpty) return;
 
     TodoService.addTodo(
       Todo(
         title: title,
-        dueAt: DateTime.now(),
+        dueAt: _newItemDueDate,
         categoryId: widget.categoryId,
         isDone: false,
         createdAt: DateTime.now(),
@@ -85,7 +100,7 @@ class _TodosPageState extends State<TodosPage> {
     return Scaffold(
       appBar: AppBar(
         backgroundColor: widget.color,
-        title: const Text('Todos'),
+        title: Text(widget.title),
         iconTheme: IconThemeData(color: Colors.white),
         titleTextStyle: TextStyle(color: Colors.white, fontSize: 20),
       ),
@@ -123,16 +138,54 @@ class _TodosPageState extends State<TodosPage> {
                           },
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
+                      IconButton(
+                        style: ElevatedButton.styleFrom(
+                          backgroundColor: _newItemDueDate != null
+                              ? Colors.grey
+                              : widget.color,
+                        ),
+                        onPressed: () async {
+                          DateTime? pickedDate = await showDatePicker(
+                            context: context,
+                            initialDate: DateTime.now(),
+                            firstDate: DateTime(2000),
+                            lastDate: DateTime(2100),
+                            builder: (context, child) {
+                              return Theme(
+                                data: Theme.of(context).copyWith(
+                                  colorScheme: ColorScheme.light(
+                                    primary: widget.color,
+                                    onPrimary: Colors.white,
+                                    onSurface: widget.color,
+                                  ),
+                                ),
+                                child: child!,
+                              );
+                            },
+                          );
+
+                          if (pickedDate != null) {
+                            setState(() {
+                              _newItemTitle = _newItemTitle;
+                              _newItemDueDate = pickedDate;
+                            });
+                          }
+                        },
+                        icon: const Icon(
+                          Icons.calendar_month,
+                          color: Colors.white,
+                        ),
+                      ),
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: widget.color, width: 1),
+                          shape: CircleBorder(),
+                          padding: const EdgeInsets.all(5),
+                        ),
                         onPressed: () {
                           _addItem(_newItemTitle);
                         },
-
-                        child: Text(
-                          "Add",
-                          style: TextStyle(color: widget.color),
-                        ),
+                        child: Icon(Icons.add, color: widget.color),
                       ),
                     ],
                   ),
@@ -144,9 +197,13 @@ class _TodosPageState extends State<TodosPage> {
                     itemBuilder: (BuildContext context, int index) {
                       return RowClass(
                         title: items[index].title,
+                        dueAt: items[index].dueAt,
                         isDone: items[index].isDone,
                         onChanged: (value) {
                           _setAsDone(index, value);
+                        },
+                        onDelete: () {
+                          _deleteItem(index);
                         },
                         checkColor: widget.color,
                       );
