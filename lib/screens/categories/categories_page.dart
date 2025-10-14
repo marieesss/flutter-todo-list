@@ -6,9 +6,21 @@ import 'package:flutter_application_1/screens/todos/todos.dart';
 import '../../models/category.dart';
 import '../../services/category_service.dart';
 import 'add_edit_category_page.dart';
+import '../auth/LoginRegister.dart'; // ✅ Ajout de l'import pour LoginPage
 
 class CategoriesPage extends StatelessWidget {
   const CategoriesPage({super.key});
+
+  Future<void> _signOut(BuildContext context) async {
+    await FirebaseAuth.instance.signOut();
+    if (!context.mounted) return;
+
+    // Redirige vers l’écran de connexion en effaçant la pile de navigation
+    Navigator.of(context).pushAndRemoveUntil(
+      MaterialPageRoute(builder: (_) => const LoginPage()),
+      (route) => false,
+    );
+  }
 
   @override
   Widget build(BuildContext context) {
@@ -19,7 +31,7 @@ class CategoriesPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Déconnexion',
-            onPressed: () => FirebaseAuth.instance.signOut(),
+            onPressed: () => _signOut(context), // ✅ Utilise la méthode ci-dessus
           ),
         ],
       ),

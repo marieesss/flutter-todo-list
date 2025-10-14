@@ -3,8 +3,9 @@ import 'package:flutter/material.dart';
 import 'package:firebase_core/firebase_core.dart';
 import 'firebase_options.dart';
 
+// écrans
 import 'screens/auth/LoginRegister.dart';
-import 'screens/homepage/homepage.dart';
+import 'screens/categories/categories_page.dart'; // 👈 au lieu de homepage.dart
 
 Future<void> main() async {
   WidgetsFlutterBinding.ensureInitialized();
@@ -28,9 +29,10 @@ class MyApp extends StatelessWidget {
           isDense: true,
         ),
       ),
-      // Démarre sur la page de connexion
       home: const LoginPage(),
-      routes: {'/home': (_) => const HomepagePage()},
+      routes: {
+        '/categories': (_) => const CategoriesPage(), // 👈 nouvelle route par défaut
+      },
     );
   }
 }
