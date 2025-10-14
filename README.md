@@ -122,6 +122,7 @@ service cloud.firestore {
   }
 }
 ```
+Modèle Firestore
 
 ```yaml
 users/{uid}
