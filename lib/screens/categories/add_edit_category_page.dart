@@ -178,26 +178,33 @@ class _AddEditCategoryPageState extends State<AddEditCategoryPage> {
               spacing: 8,
               children: [
                 _IconChoice(
+                  color: _icon == Icons.category ? _color : Colors.grey,
+
                   icon: Icons.category,
                   selected: _icon == Icons.category,
                   onTap: () => setState(() => _icon = Icons.category),
                 ),
                 _IconChoice(
-                  icon: Icons.work,
+                  color: _icon == Icons.work ? _color : Colors.grey,
                   selected: _icon == Icons.work,
+                  icon: Icons.work,
                   onTap: () => setState(() => _icon = Icons.work),
                 ),
                 _IconChoice(
+                  color: _icon == Icons.person ? _color : Colors.grey,
                   icon: Icons.person,
                   selected: _icon == Icons.person,
                   onTap: () => setState(() => _icon = Icons.person),
                 ),
                 _IconChoice(
+                  color: _icon == Icons.shopping_cart ? _color : Colors.grey,
+
                   icon: Icons.shopping_cart,
                   selected: _icon == Icons.shopping_cart,
                   onTap: () => setState(() => _icon = Icons.shopping_cart),
                 ),
                 _IconChoice(
+                  color: _icon == Icons.local_hospital ? _color : Colors.grey,
                   icon: Icons.local_hospital,
                   selected: _icon == Icons.local_hospital,
                   onTap: () => setState(() => _icon = Icons.local_hospital),
@@ -248,7 +255,7 @@ class _ColorDot extends StatelessWidget {
           color: color,
           shape: BoxShape.circle,
           border: Border.all(
-            color: selected ? Colors.black : Colors.transparent,
+            color: selected ? Colors.white : Colors.transparent,
             width: 2,
           ),
         ),
@@ -261,17 +268,21 @@ class _IconChoice extends StatelessWidget {
   final IconData icon;
   final bool selected;
   final VoidCallback onTap;
+  final Color color;
   const _IconChoice({
     required this.icon,
     required this.selected,
     required this.onTap,
+    required this.color,
   });
 
   @override
   Widget build(BuildContext context) {
     return ChoiceChip(
-      label: Icon(icon),
+      label: Icon(icon, color: Colors.white),
       selected: selected,
+      checkmarkColor: Colors.white,
+      color: MaterialStateProperty.all(color),
       onSelected: (_) => onTap(),
     );
   }

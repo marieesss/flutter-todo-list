@@ -20,7 +20,6 @@ class RowClass extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    print(dueAt);
     return ListTile(
       title: Text(title),
       contentPadding: const EdgeInsets.all(8.0),
@@ -28,11 +27,12 @@ class RowClass extends StatelessWidget {
         value: isDone,
         onChanged: onChanged,
         activeColor: checkColor,
+        side: const BorderSide(color: Colors.white),
       ),
       subtitle: Text(
         dueAt != null
             ? "Due: ${dueAt!.day}/${dueAt!.month}/${dueAt!.year}"
-            : "",
+            : "No due date",
         style: TextStyle(
           color:
               dueAt != null &&

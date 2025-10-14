@@ -24,6 +24,7 @@ class TodosPage extends StatefulWidget {
 class _TodosPageState extends State<TodosPage> {
   List<Todo> items = [];
   bool isLoading = true;
+  final TextEditingController _controller = TextEditingController();
 
   @override
   void initState() {
@@ -92,6 +93,11 @@ class _TodosPageState extends State<TodosPage> {
       ),
     );
 
+    setState(() {
+      _newItemTitle = '';
+      _newItemDueDate = null;
+    });
+    _controller.clear();
     _loadTodos();
   }
 
@@ -114,6 +120,7 @@ class _TodosPageState extends State<TodosPage> {
                     children: [
                       Expanded(
                         child: TextField(
+                          controller: _controller,
                           cursorColor: widget.color,
                           decoration: InputDecoration(
                             labelText: 'Enter your todo',
@@ -150,6 +157,7 @@ class _TodosPageState extends State<TodosPage> {
                             initialDate: DateTime.now(),
                             firstDate: DateTime(2000),
                             lastDate: DateTime(2100),
+
                             builder: (context, child) {
                               return Theme(
                                 data: Theme.of(context).copyWith(
@@ -157,6 +165,12 @@ class _TodosPageState extends State<TodosPage> {
                                     primary: widget.color,
                                     onPrimary: Colors.white,
                                     onSurface: widget.color,
+                                    surface: Colors.white,
+                                  ),
+                                  textButtonTheme: TextButtonThemeData(
+                                    style: TextButton.styleFrom(
+                                      foregroundColor: widget.color,
+                                    ),
                                   ),
                                 ),
                                 child: child!,
