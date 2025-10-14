@@ -140,7 +140,9 @@ class _TodosPageState extends State<TodosPage> {
                       ),
                       IconButton(
                         style: ElevatedButton.styleFrom(
-                          backgroundColor: widget.color,
+                          backgroundColor: _newItemDueDate != null
+                              ? Colors.grey
+                              : widget.color,
                         ),
                         onPressed: () async {
                           DateTime? pickedDate = await showDatePicker(
@@ -174,13 +176,16 @@ class _TodosPageState extends State<TodosPage> {
                           color: Colors.white,
                         ),
                       ),
-                      const SizedBox(width: 8),
-                      ElevatedButton(
+                      OutlinedButton(
+                        style: OutlinedButton.styleFrom(
+                          side: BorderSide(color: widget.color, width: 1),
+                          shape: CircleBorder(),
+                          padding: const EdgeInsets.all(5),
+                        ),
                         onPressed: () {
                           _addItem(_newItemTitle);
                         },
-
-                        child: Text("+", style: TextStyle(color: widget.color)),
+                        child: Icon(Icons.add, color: widget.color),
                       ),
                     ],
                   ),
