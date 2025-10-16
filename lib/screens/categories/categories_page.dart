@@ -6,7 +6,7 @@ import 'package:flutter_application_1/screens/todos/todos.dart';
 import '../../models/category.dart';
 import '../../services/category_service.dart';
 import 'add_edit_category_page.dart';
-import '../auth/LoginRegister.dart'; // ✅ Ajout de l'import pour LoginPage
+import '../auth/LoginRegister.dart';
 
 class CategoriesPage extends StatelessWidget {
   const CategoriesPage({super.key});
@@ -15,7 +15,6 @@ class CategoriesPage extends StatelessWidget {
     await FirebaseAuth.instance.signOut();
     if (!context.mounted) return;
 
-    // Redirige vers l’écran de connexion en effaçant la pile de navigation
     Navigator.of(context).pushAndRemoveUntil(
       MaterialPageRoute(builder: (_) => const LoginPage()),
       (route) => false,
@@ -31,7 +30,7 @@ class CategoriesPage extends StatelessWidget {
           IconButton(
             icon: const Icon(Icons.logout),
             tooltip: 'Déconnexion',
-            onPressed: () => _signOut(context), // ✅ Utilise la méthode ci-dessus
+            onPressed: () => _signOut(context),
           ),
         ],
       ),
@@ -44,6 +43,7 @@ class CategoriesPage extends StatelessWidget {
           if (snapshot.hasError) {
             return Center(child: Text('Erreur : ${snapshot.error}'));
           }
+
           final categories = snapshot.data ?? [];
           if (categories.isEmpty) {
             return const Center(child: Text('Aucune catégorie'));
@@ -54,11 +54,14 @@ class CategoriesPage extends StatelessWidget {
             separatorBuilder: (_, __) => const Divider(height: 1),
             itemBuilder: (context, index) {
               final category = categories[index];
+
               return ListTile(
                 leading: Icon(category.icon, color: category.color),
                 title: Text(category.name),
                 subtitle: Text(category.description),
-                onLongPress: () => Navigator.of(context).push(
+
+                // 👉 clic normal : ouvre la page des todos de la catégorie
+                onTap: () => Navigator.of(context).push(
                   MaterialPageRoute<void>(
                     builder: (context) => TodosPage(
                       categoryId: category.id,
@@ -67,31 +70,42 @@ class CategoriesPage extends StatelessWidget {
                     ),
                   ),
                 ),
+
                 trailing: PopupMenuButton<String>(
                   onSelected: (value) async {
                     if (value == 'edit') {
-                      // Aller sur la page d’édition
                       Navigator.push(
                         context,
                         MaterialPageRoute(
-                          builder: (_) =>
-                              AddEditCategoryPage(category: category),
+                          builder: (_) => AddEditCategoryPage(category: category),
                         ),
                       );
                     } else if (value == 'delete') {
                       final confirm = await showDialog<bool>(
                         context: context,
                         builder: (context) => AlertDialog(
-                          title: const Text('Supprimer la catégorie'),
+                          // ✅ titre & contenu en noir
+                          title: const Text(
+                            'Supprimer la catégorie',
+                            style: TextStyle(color: Colors.black),
+                          ),
                           content: Text(
                             'Voulez-vous vraiment supprimer "${category.name}" ?',
+                            style: const TextStyle(color: Colors.black),
                           ),
                           actions: [
+                            // ✅ boutons en noir
                             TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.black,
+                              ),
                               onPressed: () => Navigator.pop(context, false),
                               child: const Text('Annuler'),
                             ),
                             TextButton(
+                              style: TextButton.styleFrom(
+                                foregroundColor: Colors.black,
+                              ),
                               onPressed: () => Navigator.pop(context, true),
                               child: const Text('Supprimer'),
                             ),
@@ -103,11 +117,20 @@ class CategoriesPage extends StatelessWidget {
                       }
                     }
                   },
-                  itemBuilder: (context) => [
-                    const PopupMenuItem(value: 'edit', child: Text('Modifier')),
-                    const PopupMenuItem(
+                  itemBuilder: (context) => const [
+                    PopupMenuItem(
+                      value: 'edit',
+                      child: Text(
+                        'Modifier',
+                        style: TextStyle(color: Colors.black),
+                      ),
+                    ),
+                    PopupMenuItem(
                       value: 'delete',
-                      child: Text('Supprimer'),
+                      child: Text(
+                        'Supprimer',
+                        style: TextStyle(color: Colors.black),
+                      ),
                     ),
                   ],
                 ),
